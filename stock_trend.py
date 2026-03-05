@@ -125,8 +125,6 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
     prev = df.iloc[-2]
 
     # 判断金叉/死叉
-    # 金叉: 短期均线从下方穿过长期均线
-    # 死叉: 短期均线从上方穿过长期均线
     current_cross = latest["ma_short"] - latest["ma_long"]
     prev_cross = prev["ma_short"] - prev["ma_long"]
 
@@ -135,7 +133,6 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
         direction = "上升"
         signal = "持仓待涨"
 
-        # 计算金叉以来持续的天数
         for i in range(len(df) - 1, -1, -1):
             if df.iloc[i]["ma_short"] - df.iloc[i]["ma_long"] <= 0:
                 duration = len(df) - 1 - i
@@ -143,8 +140,6 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
         else:
             duration = len(df)
 
-        # 历史回测估算（简化版：假设上升趋势平均持续20-40个交易日）
-        # 结合当前动量
         recent_return = (latest["close"] - df.iloc[-20]["close"]) / df.iloc[-20]["close"] if len(df) >= 20 else 0
 
         if recent_return > 0.1:
@@ -159,7 +154,6 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
         direction = "下降"
         signal = "空仓观望"
 
-        # 计算死叉以来持续的天数
         for i in range(len(df) - 1, -1, -1):
             if df.iloc[i]["ma_short"] - df.iloc[i]["ma_long"] >= 0:
                 duration = len(df) - 1 - i
@@ -181,7 +175,6 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
         direction = "上升"
         signal = "持仓待涨"
 
-        # 找到最近一次金叉
         for i in range(len(df) - 1, -1, -1):
             if df.iloc[i]["ma_short"] - df.iloc[i]["ma_long"] <= 0:
                 duration = len(df) - 1 - i
@@ -268,7 +261,6 @@ def send_wechat_message(title: str, content: str) -> bool:
     except Exception as e:
         print(f"推送异常: {e}")
         return False
-        return False
 
 
 # ==================== 主程序 ====================
@@ -319,18 +311,18 @@ def main():
 
         line = f"{trend_emoji} {r['name']} 当前为【{r['trend']}】"
         line += f"（已持续{r['duration_days']}个交易日，预计{r['expected_remaining']}）"
-        line += f"\n   {signal_emoji} 建议【{r['signal']}】"
+        line += f"<br>{signal_emoji} 建议【{r['signal']}】"
 
         message_lines.append(line)
 
-    message_lines.append("\n💡 策略说明: 20日均线 vs 60日均线金叉/死叉")
+    message_lines.append("<br>💡 策略说明: 20日均线 vs 60日均线金叉/死叉")
     message_lines.append("⏰ 每天15:30自动推送")
 
-    full_message = "\n".join(message_lines)
+    full_message = "<br>".join(message_lines)
 
     print("\n" + "=" * 50)
     print("推送内容:")
-    print(full_message)
+    print(full_message.replace("<br>", "\n"))
     print("=" * 50)
 
     # 推送

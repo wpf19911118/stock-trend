@@ -1,0 +1,29 @@
+{
+  "date": "2026-03-05",
+  "results": [
+    {
+      "name": "沪深300",
+      "code": "000300",
+      "trend": "上升趋势",
+      "direction": "上升",
+      "duration_days": 37,
+      "expected_remaining": "2-3周",
+      "signal": "持仓待涨",
+      "close": 4602.625,
+      "ma_short": 4693.114100000001,
+      "ma_long": 4666.84285
+    },
+    {
+      "name": "中证500",
+      "code": "000905",
+      "trend": "上升趋势",
+      "direction": "上升",
+      "duration_days": 38,
+      "expected_remaining": "2-3周",
+      "signal": "持仓待涨",
+      "close": 8248.945,
+      "ma_short": 8369.82865,
+      "ma_long": 7870.628116666666
+    }
+  ]
+}
