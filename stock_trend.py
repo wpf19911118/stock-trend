@@ -25,7 +25,8 @@ from pathlib import Path
 
 # ==================== 配置 ====================
 # 从环境变量或配置文件读取
-SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")  # Server酱 SCKEY
+SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")  # Server酱 token
+PUSHPLUS_WEBHOOK = os.environ.get("PUSHPLUS_WEBHOOK", "wxa551176bf758ffc7")  # pushplus webhook
 
 # 股票配置
 STOCKS = {
@@ -238,17 +239,21 @@ def calculate_trend_duration(df: pd.DataFrame, ma_short: int, ma_long: int) -> d
 
 # ==================== 消息推送 ====================
 def send_wechat_message(title: str, content: str) -> bool:
-    """Server酱推送"""
+    """Server酱推送 (pushplus新版)"""
     if not SERVERCHAN_KEY:
         print("未配置 SERVERCHAN_KEY，跳过推送")
         print(f"消息内容:\n{title}\n{content}")
         return False
 
-    url = f"https://www.pushplus.plus/send?token={SERVERCHAN_KEY}"
+    # 新版 pushplus API
+    url = "https://www.pushplus.plus/api/send"
     data = {
+        "token": SERVERCHAN_KEY,
         "title": title,
         "content": content,
-        "template": "text"
+        "template": "html",
+        "channel": "wechat",
+        "webhook": PUSHPLUS_WEBHOOK
     }
 
     try:
@@ -262,6 +267,7 @@ def send_wechat_message(title: str, content: str) -> bool:
             return False
     except Exception as e:
         print(f"推送异常: {e}")
+        return False
         return False
 
 
