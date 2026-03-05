@@ -9,6 +9,7 @@ on:
 
 env:
   SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+  PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
 
 jobs:
   run-trend-monitor:
@@ -31,6 +32,7 @@ jobs:
       - name: Run trend analysis
         env:
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
         run: python stock_trend.py
 
       - name: Upload results
