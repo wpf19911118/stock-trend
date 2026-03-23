@@ -1,0 +1,74 @@
+name: Daily Stock Analysis - Dual Strategy
+
+on:
+  # 每天早上8点运行（北京时间），此时美股已收盘
+  schedule:
+    - cron: '0 0 * * *'  # UTC时间 00:00 = 北京时间 08:00
+  # 也可以手动触发
+  workflow_dispatch:
+  # 代码推送时触发（测试用）
+  push:
+    branches: [main, master]
+
+# 设置环境变量
+env:
+  SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+  PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
+
+jobs:
+  run-dual-strategy-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. 运行双均线策略（V1.0）
+      - name: Run MA Crossover Strategy (V1.0)
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
+        run: |
+          echo "🔄 运行双均线策略..."
+          python stock_trend.py
+
+      # 5. 运行多因子评分策略（V2.0-V4.0）
+      - name: Run Multi-Factor Strategy (V2.0-V4.0)
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
+        run: |
+          echo "🔄 运行多因子评分策略..."
+          python stock_monitor_v2.py
+
+      # 6. 上传结果（保留最近30天）
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: analysis-results
+          path: results/
+          retention-days: 30
+
+      # 7. 提交结果到仓库（保留历史记录）
+      - name: Commit results
+        if: always()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add results/
+          git diff --staged --quiet || git commit -m "Update analysis results - $(date +'%Y-%m-%d')"
+          git push || echo "No changes to commit"

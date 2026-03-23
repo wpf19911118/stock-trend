@@ -1,0 +1,53 @@
+name: Daily Stock Trend Monitor
+
+on:
+  # 每天下午3点30分（A股收盘后）运行
+  schedule:
+    - cron: '30 7 * * *'  # UTC时间 = 北京时间15:30
+  # 也可以手动触发
+  workflow_dispatch:
+  # 代码推送时触发（测试用）
+  push:
+    branches: [main]
+
+# 设置环境变量
+env:
+  SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+  PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
+
+jobs:
+  run-trend-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. 运行趋势分析
+      - name: Run trend analysis
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          PUSHPLUS_WEBHOOK: ${{ secrets.PUSHPLUS_WEBHOOK }}
+        run: python stock_trend.py
+
+      # 5. 上传结果（可选，保留最近7天）
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trend-results
+          path: results/
+          retention-days: 7
