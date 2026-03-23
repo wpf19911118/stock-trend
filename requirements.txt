@@ -1,5 +1,33 @@
-# 股票趋势跟踪机器人依赖
+# 股票趋势跟踪机器人依赖 (V4.0 完整版)
+
+# 核心依赖
 pandas>=1.5.0
 numpy>=1.21.0
-akshare>=1.12.0
 requests>=2.28.0
+
+# A股数据源
+akshare>=1.12.0
+
+# 美股数据源
+yfinance>=0.2.28
+
+# 宏观数据
+pandas-datareader>=0.10.0
+
+# 可视化
+matplotlib>=3.7.0
+
+# Web界面
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# yfinance 依赖
+frozendict>=2.3.4
+multitasking>=0.0.7
+peewee>=3.16.2
+protobuf>=3.19.0
+pytz>=2023.3
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+html5lib>=1.1
+
