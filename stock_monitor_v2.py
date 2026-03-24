@@ -180,21 +180,35 @@ def generate_html_report(results: List[ScoreResult], macro_data: Dict) -> str:
     
     html_parts.append("<hr>")
     
-    # 调仓建议
-    html_parts.append("<h4>💡 调仓建议</h4>")
+    # 投资观察（替代调仓建议，更适合中长期策略）
+    html_parts.append("<h4>💡 投资观察</h4>")
     
     # 找出最佳和最差的
     best = sorted_results[0] if sorted_results else None
     worst = sorted_results[-1] if sorted_results else None
     
-    if best and best.total_score >= 65:
+    # 只有在出现极端情况时才提示
+    if best and best.total_score >= 75:
         html_parts.append(f"<div style='padding:8px;background:#E8F5E9;border-radius:4px;margin-bottom:8px;'>")
-        html_parts.append(f"🎯 <b>重点关注:</b> {best.name} ({best.total_score}分) - {best.action}")
+        html_parts.append(f"🌟 <b>机会关注:</b> {best.name} ({best.total_score}分) - {best.action}")
+        html_parts.append("<br><small style='color:#666;'>评分较高，可在下次季度调仓时重点关注</small>")
+        html_parts.append("</div>")
+    elif best and best.total_score >= 65:
+        html_parts.append(f"<div style='padding:8px;background:#E8F5E9;border-radius:4px;margin-bottom:8px;'>")
+        html_parts.append(f"📊 <b>表现较好:</b> {best.name} ({best.total_score}分) - {best.action}")
         html_parts.append("</div>")
     
-    if worst and worst.total_score < 50:
+    if worst and worst.total_score < 40:
         html_parts.append(f"<div style='padding:8px;background:#FFEBEE;border-radius:4px;margin-bottom:8px;'>")
-        html_parts.append(f"⚠️ <b>风险提示:</b> {worst.name} ({worst.total_score}分) - {worst.action}")
+        html_parts.append(f"⚠️ <b>风险警示:</b> {worst.name} ({worst.total_score}分) - {worst.action}")
+        html_parts.append("<br><small style='color:#666;'>评分较低，建议下次季度评估时考虑减仓</small>")
+        html_parts.append("</div>")
+    
+    # 如果没有极端情况，显示正常观察
+    if (not best or best.total_score < 65) and (not worst or worst.total_score >= 40):
+        html_parts.append(f"<div style='padding:8px;background:#FFF8E1;border-radius:4px;margin-bottom:8px;'>")
+        html_parts.append(f"📋 <b>市场观察:</b> 当前各标的评分处于正常区间，暂无极端机会或风险信号")
+        html_parts.append("<br><small style='color:#666;'>建议继续保持现有配置，等待季度评估节点</small>")
         html_parts.append("</div>")
     
     # 资产配置建议
@@ -222,7 +236,8 @@ def generate_html_report(results: List[ScoreResult], macro_data: Dict) -> str:
     
     html_parts.append("<hr>")
     html_parts.append("<small style='color:#999;'>💬 策略说明: 多因子综合评分系统 V2.0 (技术30%+估值35%+宏观25%+情绪10%)</small><br>")
-    html_parts.append("<small style='color:#999;'>⏰ 建议调仓周期: 每季度评估 | 推送时间: 每日08:00(北京时间)</small><br>")
+    html_parts.append("<small style='color:#999;'>⏰ 评估周期: 季度调仓 | 推送频率: 每日08:00(北京时间)市场监测</small><br>")
+    html_parts.append("<small style='color:#666;'>📌 提示: 每日推送仅为市场监测参考，实际调仓建议以季度评估为准</small><br>")
     html_parts.append("<small style='color:#999;'>📊 数据来源: Yahoo Finance / Akshare</small>")
     
     return "".join(html_parts)
@@ -446,10 +461,13 @@ def main():
     print("-" * 70)
     
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    title = f"📊 市场分析 V2.0 {today}"
     
+    # 根据是否需要调仓显示不同标题
+    # 中长线策略：季度评估时才显示"季度评估提醒"，平时显示"市场监测日报"
     if need_rebalance:
-        title = f"🔔 调仓提醒 V2.0 {today}"
+        title = f"🔔 季度评估提醒 V2.0 {today}"
+    else:
+        title = f"📊 市场监测日报 V2.0 {today}"
     
     send_wechat_message(title, html_report)
     
